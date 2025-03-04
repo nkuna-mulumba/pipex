@@ -44,6 +44,7 @@ void	close_pipe(int *fd)
 /*
 	Função que redireciona a entrada padrão (stdin) para um arquivo.
 	- file: Nome do arquivo a ser usado como entrada.
+	1. Abre o arquivo no modo de leitura (O_RDONLY).
 	Se ocorrer um erro ao abrir o arquivo, uma mensagem de erro é exibida
 	e o programa termina com um código de saída de falha.
 */
@@ -67,4 +68,35 @@ void	redir_input(const char *file)
 	}
 	// Fecha o descritor de arquivo do arquivo de entrada
 	close(input_file);
+}
+/*
+	Função que redireciona a saída padrão (stdout) para um arquivo 
+	especificado.
+	- file: Nome do arquivo para o qual a saída padrão será redirecionada.
+		1. Abre o arquivo no modo de escrita (O_WRONLY).
+			- Cria o arquivo se ele não existir (O_CREAT).
+			- Trunca o arquivo (zera o conteúdo) se ele já existir (O_TRUNC).
+		2. Redireciona o descritor de saída padrão (STDOUT_FILENO) 
+			para o descritor do arquivo aberto.
+		3. Fecha o descritor do arquivo após o redirecionamento.
+		- Exibe uma mensagem de erro caso o arquivo não possa ser aberto
+		ou o redirecionamento falhe, encerrando o programa.
+*/
+void redir_output(const char *file)
+{
+	int	output_file;
+
+	output_file = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (output_file == -1)
+	{
+		perror("Erro ao abrir o arquivo de saída");
+		exit(1);
+	}
+	if (dup2(output_file, STDOUT_FILENO) == -1)
+	{
+		perror("Erro ao redirecionar a saída padrão");
+		close(output_file);
+		exit(1);
+	}
+	close(output_file);
 }

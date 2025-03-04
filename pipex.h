@@ -25,6 +25,10 @@ void	create_pipe(int *fd);
 void	close_pipe(int *fd);
 //Funçao para redicionar a entrada padrao (stdin) para fd
 void	redir_input(const char *file);
+//Funçao para redicionar a saida padrao (stdout) para fd
+void	redir_output(const char *file);
+//Funçao para executar comando com seus argumentos
+void	exec_comand(const char *cmd);
 
 
 #endif
@@ -32,6 +36,6 @@ void	redir_input(const char *file);
 // void create_pipe(int *fd);1
 // void close_pipe(int *fd);2
 // void redir_input(const char *file); 3
-// int exec_command(char **cmd, char **env);
+// int exec_command(char **cmd, char **env);4
 // void redir_output(const char *file);
 // void execute_pipeline(const char *input_file, const char *output_file, char **cmd1, char **cmd2, char **envp);

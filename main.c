@@ -35,7 +35,7 @@ int	main(void)
 
 	return (0);
 }
-*/
+
 
 //Testar a redir_input()
 int main(int argc, char **argv)
@@ -57,5 +57,28 @@ int main(int argc, char **argv)
 	}
 	buffer[bytes_read] = '\0';
 	printf("Conteudo do arquivo: %s\n",  buffer);
+	return (0);
+}
+*/
+
+//Testar a redir_output() com 3 ou mais argumentos
+int main(int argc, char **argv)
+{
+	int	i;
+
+	if (argc < 3)
+	{
+		printf("Usa %s <arquivo de saida>\n", argv[0]);
+		return (1);
+	}
+	
+	redir_output(argv[1]);//recebe file
+	i = 2;//recebe executavel e file
+	while (i < argc)//se é menor que argc direciona a saida para arquivo
+	{
+		printf(" %s ", argv[i]);
+		i++;
+	}
+	printf("\n");
 	return (0);
 }
