@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	printf("Conteudo do arquivo: %s\n",  buffer);
 	return (0);
 }
-*/
+
 
 //Testar a redir_output() com 3 ou mais argumentos
 int main(int argc, char **argv)
@@ -80,5 +80,57 @@ int main(int argc, char **argv)
 		i++;
 	}
 	printf("\n");
+	return (0);
+}
+*/
+
+
+int main(int argc, char **argv, char **env)
+{
+	char	*path;
+
+	while (*env)
+	{
+		if (!ft_strncmp(*env, "PATH", 4))
+		{
+			path = *env;
+			break ;
+		}
+		env++;
+	}
+	
+	/*
+	//hacer um split para path;
+		Usar la funcion access para comprovar 
+		se la ruta existe de executavel
+	*/
+	
+	
+	// if (argc < 2)
+	// {
+	// 	printf("Uso: %s <com o comando>\n", argv[0]);
+	// 	exit(1);
+	// }
+
+	// char	**cmd = malloc((argc) * sizeof(char *));
+	// if (!cmd)
+	// {
+	// 	perror("Erro ao alocar memória");
+	// 	return (1);
+	// }
+
+	// int	i = 0;
+	// while (i < argc - 1)
+	// {
+	// 	cmd[i] =  argv[i + 1];
+	// 	i++;
+	// }
+	// cmd[argc - 1] = NULL;
+
+	// char	*env[] = {NULL};
+
+	// exec_command(cmd, env);
+
+	// free(cmd);
 	return (0);
 }
