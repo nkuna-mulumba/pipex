@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "../include/pipex.h"
 
 /*
 	Funçao para fecha os descritores de arquivo do pipe 

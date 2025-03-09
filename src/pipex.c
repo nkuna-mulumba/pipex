@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "../include/pipex.h"
 
 /*
 	Funçao para executar o 1º comando, redirecionando a entrada 

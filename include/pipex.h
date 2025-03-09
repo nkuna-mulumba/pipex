@@ -14,7 +14,7 @@
 # define PIPEX_H
 
 //Adicionar biblioteca "libft" no projecto
-# include "libft/libft.h"
+# include "../libft/libft.h"
 
 /*
 	DECLARAÇAO DAS FUNÇOES:
@@ -39,7 +39,6 @@ void	ft_exec_cmd_chek(char *cmd, char **envp);
 pid_t	ft_cmd1(char **argv, char **env, int *file_pipe);
 //Funçao para executar 2º comando e redicionar entrada no pipe e saida para arquivo
 pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc);
-
 
 #endif
 

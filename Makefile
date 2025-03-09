@@ -2,9 +2,12 @@
 NAME = pipex
 
 # Arquivo fonte do projecto
-SRC = pipex_utils.c\
-	pipex.c\
-	main.c
+SRC_DIR = src
+
+# Arquivo fonte do projecto
+SRC = $(SRC_DIR)/pipex_utils.c\
+	$(SRC_DIR)/pipex.c\
+	$(SRC_DIR)/main.c
 OBJ = $(SRC:.c=.o)
 
 # Compilador a ser usado e Flags do compilador

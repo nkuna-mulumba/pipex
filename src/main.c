@@ -10,30 +10,30 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "../include/pipex.h"
 
-int	main(int argc, char **argv, char **envp)
+int	main(int argc, char **argv, char **env)
 {
-	int		file_pipe[2];
-	pid_t	id[2];
-	int		status;
+	int		pipe_fd[2];// Descritores do pipe
+	pid_t	id[2]; // IDs dos processos filhos
+	int		process_status; // Status dos filhos
 
 	if (argc != 5)
 	{
 		write(2, "Usage: ./pipex intfile cmd1 cmd2 outfile\n", 41);
 		exit(1);
 	}
-	if (pipe(file_pipe) == -1)
+	if (pipe(pipe_fd) == -1)// Cria o pipe
 	{
 		perror("Error:");
 		exit(1);
 	}
-	id[0] = ft_cmd1(argv, envp, file_pipe);
-	id[1] = ft_cmd2(argv, envp, file_pipe, argc);
-	close(file_pipe[0]);
-	close(file_pipe[1]);
-	waitpid(id[0], &status, 0);
-	waitpid(id[1], &status, 0);
-	exit(WEXITSTATUS(status));
+	id[0] = ft_cmd1(argv, env, pipe_fd); // Executa cmd1
+	id[1] = ft_cmd2(argv, env, pipe_fd, argc);// Executa cmd2
+	close(pipe_fd[0]);// Fecha leitura do pipe
+	close(pipe_fd[1]); // Fecha escrita do pipe
+	waitpid(id[0], &process_status, 0);// Espera cmd1 terminar
+	waitpid(id[1], &process_status, 0);
+	exit(WEXITSTATUS(process_status));// Sai com o status de cmd2
 	return (0);
 }
