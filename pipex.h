@@ -19,24 +19,33 @@
 /*
 	DECLARAÇAO DAS FUNÇOES:
 */
+//Funçao para fechar fd de arquivos do pipe, se falhar exibe erro
+void	ft_pipe_error(int *fd, char *file);
 //Funçao para encontrar a variavel de ambiente PATH
-char	*ft_find_path(char **envp);
+char	*ft_get_path_variable(char **env);
 //Funçao para liberar memoria de cada string
-void	ft_free_memory(char **tab);
+void	ft_free_array(char **array);
 //Funçao para exibir a mensagem de erro e encerrar programa
-int	ft_command_error(char *cmd);
-
-//Funçao para criar um "pipe"
-// void	create_pipe(int *fd);
-//Funçao para fechar os fd criado por defeito com "pipe"
-//void	close_pipe(int *fd);
-//Funçao para redicionar a entrada padrao (stdin) para fd
-//void	redir_input(const char *file);
-//Funçao para redicionar a saida padrao (stdout) para fd
-//void	redir_output(const char *file);
+int		ft_cmd_error(char *cmd);
+//Funçao para verificar se argumento é vazia ou contem espaço
+void	ft_empty(char *cmd);
+//Funçao para encontrar caminho completo do executavel
+char	*ft_locate_cmd(char **cmd_s, char **env);
+//Funçao para verificar e executar comandos
+void	ft_exec_cmd_chek(char *cmd, char **envp);
 //Funçao para executar comando com seus argumentos
-//void	exec_command(const char *cmd);
-//int exec_command(char **cmd, char **env);
+//void	ft_exec_command(char **full_cmd, char **env);
+//Funçao para executar 1º comando e redicionar entrada e saida no pipe
+pid_t	ft_cmd1(char **argv, char **env, int *file_pipe);
+//Funçao para executar 2º comando e redicionar entrada no pipe e saida para arquivo
+pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc);
 
 
 #endif
+
+
+/*
+	Pipex redirecione a entrada e a saída dos comandos 
+	através de arquivos e pipes, criando um pipeline 
+	eficiente que executa múltiplos comandos sequencialmente.
+*/

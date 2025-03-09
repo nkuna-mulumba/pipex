@@ -12,125 +12,28 @@
 
 #include "pipex.h"
 
-/*
-// Testa a criação do pipe e encerramentos dos fd
-int	main(void)
+int	main(int argc, char **argv, char **envp)
 {
-	int	fd[2];
+	int		file_pipe[2];
+	pid_t	id[2];
+	int		status;
 
-	//Criar "pipe" com 2 fd entrada e saida
-	int	test;
-	create_pipe(fd);
-	// Verifique se os descritores de arquivo foram criados
-	if (fd[0] != -1 && fd[1] != -1)
+	if (argc != 5)
 	{
-		printf("Pipe criado com sucesso\n");
+		write(2, "Usage: ./pipex intfile cmd1 cmd2 outfile\n", 41);
+		exit(1);
 	}
-	else
+	if (pipe(file_pipe) == -1)
 	{
-		printf("Falha ao criar o pipe\n");
+		perror("Error:");
+		exit(1);
 	}
-	//Encerrar fd criada por defeito com "pipe"
-	close_pipe(fd);
-
-	return (0);
-}
-
-
-//Testar a redir_input()
-int main(int argc, char **argv)
-{
-	if (argc != 2)
-	{
-		printf("Usa %s <arquivo de entrada>\n", argv[0]);
-		return (1);
-	}
-	
-	redir_input(argv[1]);
-
-	char	buffer[100];
-	ssize_t bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
-	if (bytes_read == -1)
-	{
-		perror("Erro ao ler do stdin");
-		return (1);
-	}
-	buffer[bytes_read] = '\0';
-	printf("Conteudo do arquivo: %s\n",  buffer);
-	return (0);
-}
-
-
-//Testar a redir_output() com 3 ou mais argumentos
-int main(int argc, char **argv)
-{
-	int	i;
-
-	if (argc < 3)
-	{
-		printf("Usa %s <arquivo de saida>\n", argv[0]);
-		return (1);
-	}
-	
-	redir_output(argv[1]);//recebe file
-	i = 2;//recebe executavel e file
-	while (i < argc)//se é menor que argc direciona a saida para arquivo
-	{
-		printf(" %s ", argv[i]);
-		i++;
-	}
-	printf("\n");
-	return (0);
-}
-*/
-
-
-int main(int argc, char **argv, char **env)
-{
-	char	*path;
-
-	while (*env)
-	{
-		if (!ft_strncmp(*env, "PATH", 4))
-		{
-			path = *env;
-			break ;
-		}
-		env++;
-	}
-	
-	/*
-	//hacer um split para path;
-		Usar la funcion access para comprovar 
-		se la ruta existe de executavel
-	*/
-	
-	
-	// if (argc < 2)
-	// {
-	// 	printf("Uso: %s <com o comando>\n", argv[0]);
-	// 	exit(1);
-	// }
-
-	// char	**cmd = malloc((argc) * sizeof(char *));
-	// if (!cmd)
-	// {
-	// 	perror("Erro ao alocar memória");
-	// 	return (1);
-	// }
-
-	// int	i = 0;
-	// while (i < argc - 1)
-	// {
-	// 	cmd[i] =  argv[i + 1];
-	// 	i++;
-	// }
-	// cmd[argc - 1] = NULL;
-
-	// char	*env[] = {NULL};
-
-	// exec_command(cmd, env);
-
-	// free(cmd);
+	id[0] = ft_cmd1(argv, envp, file_pipe);
+	id[1] = ft_cmd2(argv, envp, file_pipe, argc);
+	close(file_pipe[0]);
+	close(file_pipe[1]);
+	waitpid(id[0], &status, 0);
+	waitpid(id[1], &status, 0);
+	exit(WEXITSTATUS(status));
 	return (0);
 }

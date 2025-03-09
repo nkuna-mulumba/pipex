@@ -13,26 +13,38 @@
 #include "pipex.h"
 
 /*
+	Funçao para fecha os descritores de arquivo do pipe 
+	e exibe uma mensagem de erro
+	@param fd: Array com os descritores de arquivo do pipe
+	@param file: Nome do arquivo associado ao erro
+*/
+void	ft_pipe_error(int *fd, char *file)
+{
+	close(fd[0]);
+	close(fd[1]);
+	perror(file);
+}
+/*
 	funçao que busca a variável de ambiente PATH
-	@param envp: Array de strings com as variáveis de ambiente
+	@param env: Array de strings com as variáveis de ambiente
 	@return: Valor da variável PATH ou NULL se não encontrada
 
 */
-char	*ft_find_path(char **envp)
+char	*ft_get_path_variable(char **env)
 {
-	char	*value_path;
+	int	i;
 
+	i = 0;
 	//Iterar sobre as variaveis de ambiente
-	while (*envp != NULL)
+	while (env[i])
 	{
-		value_path = *envp++;
 		// Verifica se a variável começa com "PATH="
-		if (ft_strncmp(value_path, "PATH=", 5) == 0)
+		if (ft_strncmp(env[i], "PATH=", 5) == 0)
 		{
 			// Retorna o valor da variável PATH
-			value_path = value_path + 5;
-			return (value_path);
+			return (env[i] + 5);
 		}
+		i++;
 	}
 	// Retorna NULL se PATH não for encontrada
 	return (NULL);
@@ -42,44 +54,64 @@ char	*ft_find_path(char **envp)
 	A funçao que libera memória de um array de strings
 	@param tab: Array de strings a ser liberado
 */
-void	ft_free_memory(char **tab)
+void	ft_free_array(char **array)
 {
 	size_t	i;
 
 	i = 0;
 	//Iterar e libarar cada string
-	while (tab[i])
+	while (array[i] != NULL)
 	{
-		free(tab[i]);
+		free(array[i]);
 		i++;
 	}
 	//Liberar array
-	free(tab);
+	free(array);
 }
 
 /*
-	A funça para exibir mensagem de erro e encerra o programa
+	A funça para exibir mensagem de erro e 
+	encerra o programa em caso de nao encontrar cmd
 	@param cmd: Comando que causou o erro
 	@return: Não retorna (encerra o programa)
 */
-int	ft_command_error(char *cmd)
+int	ft_cmd_error(char *cmd)
 {
 	// Concatena uma nova linha ao comando para exibição
 	cmd = ft_strjoin(cmd, "\n");
-	// Escreve a mensagem de erro no stderr
-	write(2, "command not found: ", 20);
+	// Escreve a mensagem de erro no stderr(2)
+	write(2, "Invalid command: ", 17);
 	write(2, cmd, ft_strlen(cmd));
 	// Libera a memória do comando concatenado
 	free(cmd);
-	exit(127);
+	exit(127);//indicando que o comando não foi encontrado
 }
+
+/*
+	Verifica se a string do comando está vazia ou contém apenas 
+	espaços em branco.
+	Chama ft_cmd_error se estiver vazia.
+	@param cmd: String do comando a ser verificada
+*/
+void	ft_empty(char *cmd)
+{
+	while ((*cmd >= 9 && *cmd <= 13) || *cmd == ' ')
+	{
+		cmd++;
+	}
+	if (*cmd == '\0')
+	{
+		ft_cmd_error(cmd);
+	}
+}
+
 /*
 	Funçao para obter o caminho completo do executável
 	@param full_cmd: Array de strings com o comando e seus argumentos
-	@param envp: Array de strings com as variáveis de ambiente
+	@param env: Array de strings com as variáveis de ambiente
 	@return: Caminho completo do executável ou NULL se não encontrado
 */
-char	ft_get_path(char **full_cmd, char **envp)
+char	*ft_locate_cmd(char **s_cmd, char **env)
 {
 	int		i;
 	char	*path;
@@ -87,22 +119,21 @@ char	ft_get_path(char **full_cmd, char **envp)
 	char	*cmd;
 	char	**path_split;
 
-	i = 0;
 	//Encotrar variavel PATH
-	path = ft_find_path(envp);
-
+	path = ft_get_path_variable(env);
 	if (path == NULL)
 	{
 		// Se PATH não é encontrada, retorna um erro
-		new = ft_strdup(full_cmd[0]);
-		(ft_command_error(new));
+		new = ft_strdup(s_cmd[0]);
+		ft_cmd_error(new);
 	}
-
+	
 	// Concatena "/" ao nome do comando
-	cmd = ft_strjoin("/", full_cmd[0]);
+	cmd = ft_strjoin("/", s_cmd[0]);
 	
 	// Dividir variavel PATH em diretórios
 	path_split = ft_split(path, ':');
+	i = 0;
 	while (path_split[i] != NULL)
 	{
 		// Concatena o diretório com o comando
@@ -111,15 +142,110 @@ char	ft_get_path(char **full_cmd, char **envp)
 		// Verifica se o comando existe e é executável
 		if (access(path, F_OK | X_OK) == 0)
 		{
-			return (free(cmd), ft_free_memory(path_split), path);
+			free(cmd);
+			ft_free_array(path_split);
+			return (path);
 		}
 		free(path);
 		i++;
 	}
 	// Libera a memória e retorna NULL se o comando não for encontrado
-	(free(cmd), ft_free_memory(path_split));
+	free(cmd);
+	ft_free_array(path_split);
 	return (NULL);
 }
+
+/*
+	Funçao para verificar e executar um comando
+	@param cmd: Comando a ser verificado e executado
+	@param env: Array de strings com as variáveis de ambiente
+*/
+void	ft_exec_cmd_chek(char *cmd, char **env)
+{
+	char	*path;
+	char	**s_cmd;
+
+	ft_empty(cmd);
+	// Dividir o comando em argumentos separado espaço
+	s_cmd = ft_split(cmd, ' ');
+
+	// Verificar se o comando é um caminho absoluto iniciado com "/"
+	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (s_cmd[0][0] == '/'))
+	{
+		// Executar o comando se for um caminho absoluto
+		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
+		{
+			ft_cmd_error(s_cmd[0]);
+			ft_free_array(s_cmd);
+		}
+	}
+
+	// Verificar se o comando é um caminho relativo iniciado com "./"
+	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (ft_strncmp(s_cmd[0], "./", 2)))
+	{
+		// Executa o comando se for um caminho relativo
+		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
+		{
+			ft_cmd_error(s_cmd[0]);
+			ft_free_array(s_cmd);
+		}
+	}
+	// Se o comando não é acessible e contem "/"
+	else if (access(s_cmd[0], F_OK | X_OK) != 0 && ft_strchr(s_cmd[0], '/'))
+	{
+		ft_cmd_error(s_cmd[0]);
+		ft_free_array(s_cmd);
+	}
+	else
+	{
+		// Obtém o caminho completo do comando
+		path = ft_locate_cmd(s_cmd, env);
+		// Executa o comando se encontrado
+		if (path ==  NULL || execve(path, s_cmd, env) == -1)
+		{
+			ft_cmd_error(s_cmd[0]);
+			ft_free_array(s_cmd);
+		}
+		ft_free_array(s_cmd);
+		free(path);
+	}
+}
+
+
+
+
+/*
+	Executa um comando com seus argumentos
+	@param full_cmd: Array de strings com o comando e seus argumentos
+	@param env: Array de strings com as variáveis de ambiente
+	@return: Código de saída do comando
+void	ft_exec_command(char **cmd_s, char **env)
+{
+	char	*path;
+
+	// Verificar se o comando está vazio
+	ft_empty(cmd_s[0]);
+	if (*cmd_s[0] == '\0')
+		return ;
+
+	// Obtém o caminho completo do comando
+	path = ft_get_path(cmd_s, env);
+	if (path == NULL)
+	{
+		ft_cmd_error(cmd_s[0]);
+		return ;
+	}
+	// Executa o comando
+	if (execve(path, cmd_s, env) == -1)
+	{
+		free(path);
+		ft_cmd_error(cmd_s[0]);
+		return ;
+	}
+	free(path);
+}
+
+*/
 
 
 
