@@ -12,7 +12,7 @@ OBJ = $(SRC:.c=.o)
 
 # Compilador a ser usado e Flags do compilador
 CC = cc
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror #-g
 
 # Diretório da bibliotecas LIBFT
 LIBFT_DIR = libft
