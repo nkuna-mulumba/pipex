@@ -77,7 +77,7 @@ void	ft_free_array(char **array)
 */
 int	ft_cmd_error(char *cmd)
 {
-	// Concatena uma nova linha ao comando para exibição
+	// Concatena uma nova linha ao comando para exibir erro
 	cmd = ft_strjoin(cmd, "\n");
 	write(2, "Invalid command: ", 17);// Mensagem de erro no stderr(2)
 	write(2, cmd, ft_strlen(cmd));
@@ -106,7 +106,7 @@ void	ft_empty(char *cmd)
 
 /*
 	Funçao para obter o caminho completo do executável
-	@param s_cmd: Array de strings com o comando e seus argumentos
+	@param s_cmd: Array de strings com o comando e argumentos
 	@param env: Array de strings com as variáveis de ambiente
 	@return: Caminho completo do executável ou NULL se não encontrado
 */
@@ -133,7 +133,6 @@ char	*ft_locate_cmd(char **s_cmd, char **env)
 	
 	// Dividir variavel PATH em diretórios
 	path_split = ft_split(path, ':');
-	
 	i = 0;
 	while (path_split[i] != NULL)
 	{
@@ -169,30 +168,28 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 	ft_empty(cmd);
 	// Dividir o comando em argumentos separado espaço
 	s_cmd = ft_split(cmd, ' ');
-	if (!s_cmd || !s_cmd[0])//Caso o comando seja invalido ou vazio ###
+	if (!s_cmd || !s_cmd[0])
 		(ft_free_array(s_cmd), exit(1));
-	
-	// Verificar se o comando é um caminho absoluto iniciado com "/"
+	//Verifica caminho do comando é absoluto "/"
 	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (s_cmd[0][0] == '/'))
 	{
-		// Executar o comando se for um caminho absoluto
+		//Se caminho é absoluto, executa
 		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
 		{
 			ft_cmd_error(s_cmd[0]);
 			ft_free_array(s_cmd);
-			exit(127);//
+			exit(127);
 		}
 	}
-
-	// Verificar se o comando é um caminho relativo iniciado com "./"
+	//Verifica caminho do comando é RELATIVO "./"
 	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (ft_strncmp(s_cmd[0], "./", 2)))
 	{
-		// Executa o comando se for um caminho relativo
+		//Se caminho é relativo, executa
 		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
 		{
 			ft_cmd_error(s_cmd[0]);
 			ft_free_array(s_cmd);
-			exit(127);//
+			exit(127);
 		}
 	}
 	// Se o comando não é acessible e contem "/"
@@ -200,7 +197,7 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 	{
 		ft_cmd_error(s_cmd[0]);
 		ft_free_array(s_cmd);
-		exit(127);//
+		exit(127);
 	}
 	else
 	{
@@ -211,13 +208,16 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 		{
 			ft_cmd_error(s_cmd[0]);
 			ft_free_array(s_cmd);
-			exit(127);//
+			exit(127);
 		}
 		ft_free_array(s_cmd);
 		free(path);
-		exit(0);//
+		exit(0);
 	}
 }
+
+
+
 
 
 
