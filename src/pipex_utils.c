@@ -77,12 +77,9 @@ void	ft_free_array(char **array)
 */
 int	ft_cmd_error(char *cmd)
 {
-	// Concatena uma nova linha ao comando para exibir erro
-	cmd = ft_strjoin(cmd, "\n");
 	write(2, "Invalid command: ", 17);// Mensagem de erro no stderr(2)
 	write(2, cmd, ft_strlen(cmd));
-	// Libera a memória do comando concatenado
-	free(cmd);
+	write(2, "\n", 1);
 	return (0);
 }
 
