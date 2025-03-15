@@ -39,6 +39,5 @@ int	main(int argc, char **argv, char **env)
 	waitpid(id[1], &process_status, 0);
 	exit(WEXITSTATUS(process_status));// Sai com o status de cmd2
 	
-	printf("FIM\n");
 	return (0);
 }

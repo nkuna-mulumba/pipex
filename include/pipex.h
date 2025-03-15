@@ -33,8 +33,6 @@ void	ft_empty(char *cmd);
 char	*ft_locate_cmd(char **cmd_s, char **env);
 //Funçao para verificar e executar comandos
 void	ft_exec_cmd_chek(char *cmd, char **envp);
-//Funçao para executar comando com seus argumentos
-//void	ft_exec_command(char **full_cmd, char **env);
 //Funçao para executar 1º comando e redicionar entrada e saida no pipe
 pid_t	ft_cmd1(char **argv, char **env, int *file_pipe);
 //Funçao para executar 2º comando e redicionar entrada no pipe e saida para arquivo

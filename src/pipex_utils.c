@@ -57,7 +57,8 @@ char	*ft_get_path_variable(char **env)
 void	ft_free_array(char **array)
 {
 	size_t	i;
-
+	if (!array)
+		return ;
 	i = 0;
 	//Iterar e libarar cada string
 	while (array[i] != NULL)
@@ -124,18 +125,19 @@ char	*ft_locate_cmd(char **s_cmd, char **env)
 		ft_cmd_error(error);
 		free(error);
 	}
-	
 	// Concatena "/" ao nome do comando
 	cmd = ft_strjoin("/", s_cmd[0]);
-	
+	if (!cmd)
+		exit(1);
 	// Dividir variavel PATH em diretórios
 	path_split = ft_split(path, ':');
+	if (!path_split)
+		return(free(cmd), NULL);
 	i = 0;
 	while (path_split[i] != NULL)
 	{
 		// Concatena o diretório com o comando
 		path = ft_strjoin(path_split[i], cmd);
-		
 		// Verifica se o comando existe e é executável
 		if (access(path, F_OK | X_OK) == 0)
 		{
