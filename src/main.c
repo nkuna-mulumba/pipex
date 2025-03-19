@@ -107,7 +107,7 @@ int main(int argc, char **argv, char **env)
 	}
 	else
 	{
-		ft_exec_multiple_pipes(argc, argv, env);//Chamara a funçao para multiplos pipes
+		ft_exec_multiple_pipes(argc, argv, env, 0);//Chamara a funçao para multiplos pipes
 	}
 	return (0);
 }

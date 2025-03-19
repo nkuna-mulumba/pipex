@@ -40,7 +40,7 @@ pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc);
 
 /* ##PARTE EXTRAS PARA SEQUENCIAS DE COMANDOS E PIPES ### */
 //Funçao para executar múltiplos comandos conectados por pipes
-void    ft_exec_multiple_pipes(int argc, char **argv, char **env);
+void    ft_exec_multiple_pipes(int argc, char **argv, char **env, int in);
 //Inicio do segundo bloco (BUFFER_SIZE)
 # ifndef BUFFER_SIZE
 #	define BUFFER_SIZE 1024 //Buffer para leitura
