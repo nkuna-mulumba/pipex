@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jcongolo <jcongolo@student.42madrid.com>   #+#  +:+       +#+        */
+/*   By: jcongolo <jcongolo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025-03-03 14:28:23 by jcongolo          #+#    #+#             */
-/*   Updated: 2025-03-03 14:28:23 by jcongolo         ###   ########.fr       */
+/*   Created: 2025/03/03 14:28:23 by jcongolo          #+#    #+#             */
+/*   Updated: 2025/03/19 11:45:02 by jcongolo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,16 @@ pid_t	ft_cmd1(char **argv, char **env, int *file_pipe);
 //Funçao para executar 2º comando e redicionar entrada no pipe e saida para arquivo
 pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc);
 
+/* ##PARTE EXTRAS PARA SEQUENCIAS DE COMANDOS E PIPES ### */
+//Funçao para executar múltiplos comandos conectados por pipes
+void    ft_exec_multiple_pipes(int argc, char **argv, char **env);
+//Inicio do segundo bloco (BUFFER_SIZE)
+# ifndef BUFFER_SIZE
+#	define BUFFER_SIZE 1024 //Buffer para leitura
+# endif // Fim do segundo bloco (BUFFER_SIZE)
+char *ft_get_next_line(int fd);
+
+//Funçao para 
+void    ft_here_doc(char *limiter, int argc, char **argv, char **env);
+
 #endif
-
-
-/*
-	Pipex redirecione a entrada e a saída dos comandos 
-	através de arquivos e pipes, criando um pipeline 
-	eficiente que executa múltiplos comandos sequencialmente.
-*/

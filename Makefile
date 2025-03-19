@@ -7,6 +7,7 @@ SRC_DIR = src
 # Arquivo fonte do projecto
 SRC = $(SRC_DIR)/pipex_utils.c\
 	$(SRC_DIR)/pipex.c\
+	$(SRC_DIR)/pipex_extra.c\
 	$(SRC_DIR)/main.c
 OBJ = $(SRC:.c=.o)
 

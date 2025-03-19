@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jcongolo <jcongolo@student.42madrid.com>   #+#  +:+       +#+        */
+/*   By: jcongolo <jcongolo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025-03-03 15:16:43 by jcongolo          #+#    #+#             */
-/*   Updated: 2025-03-03 15:16:43 by jcongolo         ###   ########.fr       */
+/*   Created: 2025/03/03 15:16:43 by jcongolo          #+#    #+#             */
+/*   Updated: 2025/03/19 14:10:43 by jcongolo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,45 +214,3 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 		exit(0);
 	}
 }
-
-
-
-
-
-
-
-
-
-/*
-	Executa um comando com seus argumentos
-	@param full_cmd: Array de strings com o comando e seus argumentos
-	@param env: Array de strings com as variáveis de ambiente
-	@return: Código de saída do comando
-void	ft_exec_command(char **cmd_s, char **env)
-{
-	char	*path;
-
-	// Verificar se o comando está vazio
-	ft_empty(cmd_s[0]);
-	if (*cmd_s[0] == '\0')
-		return ;
-
-	// Obtém o caminho completo do comando
-	path = ft_get_path(cmd_s, env);
-	if (path == NULL)
-	{
-		ft_cmd_error(cmd_s[0]);
-		return ;
-	}
-	// Executa o comando
-	if (execve(path, cmd_s, env) == -1)
-	{
-		free(path);
-		ft_cmd_error(cmd_s[0]);
-		return ;
-	}
-	free(path);
-}
-
-*/
-
