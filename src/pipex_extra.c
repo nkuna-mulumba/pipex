@@ -52,8 +52,8 @@ void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
 			(perror("Error: open infile"), exit(2));
 	}
 	else
-	fd_in = in;
-	i = 3 - (in == 0);// primeiro comando
+		fd_in = in;
+	i = 2 - (in != 0);// primeiro comando
 	while (i < argc - 2)// Loop para comandos intermediarios
 	{
 		if (pipe(pipe_fd) == -1) // Criar um pipe
@@ -62,23 +62,21 @@ void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
 		pid = fork(); // criar um processo
 		if (pid == -1)
 			perror("Error: fork");
-
 		if (pid == 0) // Processo filho
 		{
 			// Fechar descritores desnecessários
-			close(pipe_fd[0]); // Fechar leitura do pipe
+			close(pipe_fd[0]);// Fechar leitura do pipe
 			dup2(fd_in, STDIN_FILENO);
-			close(fd_in);	   // Fechar arquivo anterior
+			close(fd_in);// Fechar arquivo anterior
 			dup2(pipe_fd[1], STDOUT_FILENO); // Redirecionar saída para pipe
-			close(pipe_fd[1]);				 // Fechar escrita do pipe
-
+			close(pipe_fd[1]);// Fechar escrita do pipe
 			ft_exec_cmd_chek(argv[i], env);
 			exit(0); // Adicionar saída explícita
 		}
 		else // Processo Pai
 		{
 			close(pipe_fd[1]);	// Fechar escrita do pipe
-			close(fd_in);		// Fechar arquivo anterior
+			close(fd_in);// Fechar arquivo anterior
 			fd_in = pipe_fd[0]; // Usar leitura do pipe como entrada
 		}
 		i++;
@@ -96,16 +94,16 @@ void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
 		perror("Error: fork");
 	if (pid == 0)
 	{
-		dup2(fd_in, STDIN_FILENO);			   // Redicionar entrada do pipe
-		dup2(fd_out, STDOUT_FILENO);		   // Redicionar saida para arquivo
-		close(fd_in);						   // Fechar entrada do pipe
-		close(fd_out);						   // Fechar arquivo de saida apos dup2
+		dup2(fd_in, STDIN_FILENO);// Redicionar entrada do pipe
+		dup2(fd_out, STDOUT_FILENO);// Redicionar saida para arquivo
+		close(fd_in);// Fechar entrada do pipe
+		close(fd_out);
 		ft_exec_cmd_chek(argv[argc - 2], env); // Executar ultimo comando
 	}
 	else // Processo pai
 	{
-		close(fd_in);  // Fechar entrada do pipe
-		close(fd_out); // Fechar arquivo de saida
+		close(fd_in);// Fechar entrada do pipe
+		close(fd_out);// Fechar arquivo de saida
 		i = -1;
 		while (++i < argc - 2 - (in != 0))
 			wait(NULL);
@@ -205,7 +203,6 @@ void ft_here_doc(char *limiter, int argc, char **argv, char **env)
 	int		fd[2];
 	char	*line;
 	char	*limiter_with_newline;
-	// pid_t pid;
 
 	limiter_with_newline = ft_strjoin(limiter, "\n");
 	if (!limiter_with_newline)
@@ -226,8 +223,8 @@ void ft_here_doc(char *limiter, int argc, char **argv, char **env)
 			break;
 		}
 
-		write(fd[1], line, ft_strlen(line)); // Escrever no pipe
-		free(line);							 // Liberar a memoria alocada a linha
+		write(fd[1], line, ft_strlen(line));// Escrever no pipe
+		free(line);// Liberar a memoria alocada a linha
 	}
 
 	if (line)
