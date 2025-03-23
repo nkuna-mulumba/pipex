@@ -1,51 +1,61 @@
-# Nome do executavel final
+# Nome dos executáveis
 NAME = pipex
+BONUS_NAME = pipex_bonus
 
-# Arquivo fonte do projecto
+# Diretórios de fontes
 SRC_DIR = src
+SRC_EXTRA_DIR = src_extra
+INCLUDE_DIR = include
 
-# Arquivo fonte do projecto
+# Arquivos fontes para a parte obrigatória e bônus
 SRC = $(SRC_DIR)/pipex_utils.c\
 	$(SRC_DIR)/pipex.c\
-	$(SRC_DIR)/pipex_extra.c\
-	$(SRC_DIR)/main.c
+	$(SRC_DIR)/main_pipex.c
+
+SRC_BONUS = $(SRC_DIR)/pipex_utils.c\
+	$(SRC_DIR)/pipex.c\
+	$(SRC_EXTRA_DIR)/pipex_extra_utils.c\
+	$(SRC_EXTRA_DIR)/pipex_extra.c\
+	$(SRC_EXTRA_DIR)/main_pipex_bonus.c
+
 OBJ = $(SRC:.c=.o)
+OBJ_BONUS = $(SRC_BONUS:.c=.o)
 
-# Compilador a ser usado e Flags do compilador
+# Compilador e flags
 CC = cc
-FLAGS = -Wall -Wextra -Werror #-g
+FLAGS = -Wall -Wextra -Werror -I$(INCLUDE_DIR)
 
-# Diretório da bibliotecas LIBFT
+# Diretório da LIBFT
 LIBFT_DIR = libft
 LIBFT = $(LIBFT_DIR)/libft.a
 
-# Regra padrão para compilar o executável
+# Regras para compilar o executável principal e o bônus
 all: $(LIBFT) $(NAME)
 
-# Regras para criar o executável a partir dos objetos
+bonus: $(LIBFT) $(BONUS_NAME)
+
 $(NAME): $(OBJ)
 	$(CC) $(FLAGS) -o $(NAME) $(OBJ) $(LIBFT)
 
-# Regras para compilar as bibliotecas LIBFT
-$(LIBFT):
-	$(MAKE) -C $(LIBFT_DIR)
+$(BONUS_NAME): $(OBJ_BONUS)
+	$(CC) $(FLAGS) -o $(BONUS_NAME) $(OBJ_BONUS) $(LIBFT)
 
 # Regra para compilar os arquivos .c em .o
 %.o: %.c
-	$(CC) $(FLAGS) -I$(LIBFT_DIR) -c $< -o $@
+	$(CC) $(FLAGS) -c $< -o $@
 
-# Regra para compilar os arquivos .c em .o
+# Regra para compilar a LIBFT
+$(LIBFT):
+	$(MAKE) -C $(LIBFT_DIR)
+
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(OBJ_BONUS)
 	$(MAKE) -C $(LIBFT_DIR) clean
 
-# Regra para limpar todos os arquivos gerados, incluindo o executável
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) $(BONUS_NAME)
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
-# Regra para reconstruir tudo do zero
 re: fclean all
 
-# Declarar alvos que não são arquivos para evitar conflitos
-.PHONY: all clean fclean re
+.PHONY: all bonus clean fclean re

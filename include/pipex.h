@@ -6,7 +6,7 @@
 /*   By: jcongolo <jcongolo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 14:28:23 by jcongolo          #+#    #+#             */
-/*   Updated: 2025/03/19 11:45:02 by jcongolo         ###   ########.fr       */
+/*   Updated: 2025/03/23 16:00:06 by jcongolo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,12 @@ pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc);
 /* ##PARTE EXTRAS PARA SEQUENCIAS DE COMANDOS E PIPES ### */
 //Funçao para executar múltiplos comandos conectados por pipes
 void    ft_exec_multiple_pipes(int argc, char **argv, char **env, int in);
-//Inicio do segundo bloco (BUFFER_SIZE)
+//Inicio do segundo bloco (BUFFER_SIZE de GNL)
 # ifndef BUFFER_SIZE
 #	define BUFFER_SIZE 1024 //Buffer para leitura
 # endif // Fim do segundo bloco (BUFFER_SIZE)
 char *ft_get_next_line(int fd);
-
-//Funçao para 
+//Funçao para ler entrada interativa até o LIMITADOR ser digitado.
 void    ft_here_doc(char *limiter, int argc, char **argv, char **env);
 
 #endif
