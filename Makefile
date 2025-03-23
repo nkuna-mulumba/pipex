@@ -1,3 +1,4 @@
+
 # Nome dos executáveis
 NAME = pipex
 BONUS_NAME = pipex_bonus
@@ -57,5 +58,7 @@ fclean: clean
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
+re_bonus: fclean bonus
 
-.PHONY: all bonus clean fclean re
+# Marcar alvos que não são arquivos
+.PHONY: all bonus clean fclean re bonus_re
