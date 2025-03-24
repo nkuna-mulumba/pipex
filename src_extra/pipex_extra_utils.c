@@ -12,27 +12,29 @@
 
 #include "../include/pipex.h"
 
-int fft_strlen(char *str)
+static int	ft_len(char *str)
 {
-	int i = 0;
+	int	i;
 
+	i = 0;
 	if (!str)
-		return 0;
+		return (0);
 	while (str[i])
 		i++;
-	return i;
+	return (i);
 }
 
-char *strjoin_and_free(char *s1, char *s2)
+static char	*strjoin_and_free(char *s1, char *s2)
 {
-	char *joined;
-	size_t i = 0;
-	size_t j = 0;
+	char	*joined;
+	size_t	i;
+	size_t	j;
 
-	joined = (char *)malloc(sizeof(char) * (fft_strlen(s1) + fft_strlen(s2) + 1));
+	i = 0;
+	j = 0;
+	joined = (char *)malloc(sizeof(char) * (ft_len(s1) + ft_len(s2) + 1));
 	if (!joined)
-		return NULL;
-
+		return (NULL);
 	if (s1)
 	{
 		while (s1[i])
@@ -46,22 +48,29 @@ char *strjoin_and_free(char *s1, char *s2)
 		joined[i++] = s2[j++];
 	}
 	joined[i] = '\0';
-
 	free(s1);
-	return joined;
+	return (joined);
 }
 
-char *ft_get_next_line(int fd)
+static char	*update_line(char *line, char buffer[], int *buffer_pos)
 {
-	static char buffer[BUFFER_SIZE];
-	static int buffer_read = 0;
-	static int buffer_pos = 0;
-	char *line = NULL;
-	char temp[2];
+	char	temp[2];
 
+	temp[0] = buffer[(*buffer_pos)++];
+	temp[1] = '\0';
+	return (strjoin_and_free(line, temp));
+}
+
+char	*ft_get_next_line(int fd)
+{
+	static char	buffer[BUFFER_SIZE];
+	static int	buffer_read = 0;
+	static int	buffer_pos = 0;
+	char		*line;
+
+	line = NULL;
 	if (fd < 0 || BUFFER_SIZE <= 0)
-		return NULL;
-
+		return (NULL);
 	while (1)
 	{
 		if (buffer_pos >= buffer_read)
@@ -69,17 +78,13 @@ char *ft_get_next_line(int fd)
 			buffer_read = read(fd, buffer, BUFFER_SIZE);
 			buffer_pos = 0;
 			if (buffer_read <= 0)
-				break;
+				break ;
 		}
-		temp[0] = buffer[buffer_pos++];
-		temp[1] = '\0';
-
-		line = strjoin_and_free(line, temp);
+		line = update_line(line, buffer, &buffer_pos);
 		if (!line)
-			return NULL;
-
-		if (temp[0] == '\n')
-			break;
+			return (NULL);
+		if (line[ft_len(line) - 1] == '\n')
+			break ;
 	}
-	return line;
+	return (line);
 }

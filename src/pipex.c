@@ -13,116 +13,183 @@
 #include "../include/pipex.h"
 
 /*
-	Funçao para obter o caminho completo do executável
-	@param s_cmd: Array de strings com o comando e argumentos
-	@param env: Array de strings com as variáveis de ambiente
-	@return: Caminho completo do executável ou NULL se não encontrado
+	Função para obter e dividir a variável PATH.
+	@param env: Array de strings com as variáveis de ambiente.
+	@return: Array de diretórios da variável PATH ou NULL se 
+	não encontrada.
 */
-char	*ft_locate_cmd(char **s_cmd, char **env)
+static char	**ft_get_and_split_path(char **env)
+{
+	char	*path;
+	char	**path_split;
+
+	// Obter a variável PATH
+	path = ft_get_path_variable(env);
+	if (!path)
+	{
+		return(NULL);
+	}
+
+	// Dividir PATH em diretórios
+	path_split = ft_split(path, ':');
+	if (!path_split)
+	{
+		free(path);
+		return(NULL);
+	}
+	return(path_split);
+}
+
+/*
+	Função para localizar o caminho completo do executável.
+	@param s_cmd: Array de strings com o comando e argumentos.
+	@param path_split: Array de diretórios da variável PATH.
+	@return: Caminho completo do executável ou NULL se não 
+	encontrado.
+*/
+static char	*ft_concat_and_check_cmd(char **s_cmd, char **path_split)
 {
 	int		i;
 	char	*path;
-	char	*error;
 	char	*cmd;
-	char	**path_split;
 
-	//Encotrar variavel PATH
-	path = ft_get_path_variable(env);
-	if (path == NULL)
-	{
-		// Se PATH não é encontrada, retorna um erro
-		error = ft_strdup(s_cmd[0]);
-		ft_cmd_error(error);
-		free(error);
-	}
-	// Concatena "/" ao nome do comando
+	// Adiciona "/" em nome do comando
 	cmd = ft_strjoin("/", s_cmd[0]);
 	if (!cmd)
+	{
 		exit(1);
-	// Dividir variavel PATH em diretórios
-	path_split = ft_split(path, ':');
-	if (!path_split)
-		return(free(cmd), NULL);
+	}
+	// Percorre os diretórios e tenta localizar o comando
 	i = 0;
 	while (path_split[i] != NULL)
 	{
 		// Concatena o diretório com o comando
 		path = ft_strjoin(path_split[i], cmd);
-		// Verifica se o comando existe e é executável
+		if (!path)
+		{
+			free(cmd);
+			return(NULL);
+		}
+		// Verifica se o comando é executável
 		if (access(path, F_OK | X_OK) == 0)
 		{
 			free(cmd);
-			ft_free_array(path_split);
-			return (path);
+			return(path);// Retorna o caminho completo encontrado
 		}
 		free(path);
 		i++;
 	}
-	// Libera a memória e retorna NULL se o comando não for encontrado
-	ft_free_array(path_split);
+	// Libera memória se comando não encontrado
 	free(cmd);
-	return (NULL);
+	return(NULL);
 }
 
 /*
-	Funçao para verificar e executar um comando
-	@param cmd: Comando a ser verificado e executado
-	@param env: Array de strings com as variáveis de ambiente
+	Função para obter o caminho completo do executável.
+	@param s_cmd: Array de strings com o comando e argumentos.
+	@param env: Array de strings com as variáveis de ambiente.
+	@return: Caminho completo do executável ou NULL se não encontrado.
 */
-void	ft_exec_cmd_chek(char *cmd, char **env)
+char	*ft_locate_cmd(char **s_cmd, char **env)
+{
+	char	**path_split;
+	char	*cmd_path;
+
+	//Obtém e divide a variável PATH
+	path_split = ft_get_and_split_path(env);
+	if (!path_split)
+	{
+		ft_cmd_error(s_cmd[0]);
+		return(NULL);
+	}
+	//Procura comando nos diretórios da PATH
+	cmd_path = ft_concat_and_check_cmd(s_cmd, path_split);
+
+	// Libera memória da divisão da PATH
+	ft_free_array(path_split);
+	
+	return(cmd_path);
+}
+
+/*
+	A funçao que verifica e localiza o comando para execução.
+	@param s_cmd: Array de strings resultante da divisão do comando.
+	@param env: Array com as variáveis de ambiente do sistema.
+
+	@return: Caminho completo do comando (absoluto, relativo ou 
+	 encontrado no PATH).
+	Se o comando for inválido ou não encontrado, a função termina com `exit`.
+*/
+static char	*ft_check_and_locate_cmd(char **s_cmd, char **env)
 {
 	char	*path;
-	char	**s_cmd;
-
-	ft_empty(cmd);
-	// Dividir o comando em argumentos separado espaço
-	s_cmd = ft_split(cmd, ' ');
-	if (!s_cmd || !s_cmd[0])
-		(ft_free_array(s_cmd), exit(1));
-	//Verifica caminho do comando é absoluto "/"
+	 //Verifica se o comando é absoluto (inicia com '/')
 	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (s_cmd[0][0] == '/'))
 	{
-		//Se caminho é absoluto, executa
-		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
-		{
-			ft_cmd_error(s_cmd[0]);
-			ft_free_array(s_cmd);
-			exit(127);
-		}
+		return(ft_strdup(s_cmd[0]));
 	}
-	//Verifica caminho do comando é RELATIVO "./"
-	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (ft_strncmp(s_cmd[0], "./", 2)))
+	//Verifica se o comando é relativo (inicia com './')
+	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (ft_strncmp(s_cmd[0], "./", 2) == 0))
 	{
-		//Se caminho é relativo, executa
-		if (execve(s_cmd[0], s_cmd, env) == -1)//Caso falhar
-		{
-			ft_cmd_error(s_cmd[0]);
-			ft_free_array(s_cmd);
-			exit(127);
-		}
+		return(ft_strdup(s_cmd[0]));
 	}
-	// Se o comando não é acessible e contem "/"
-	else if ((access(s_cmd[0], F_OK | X_OK) != 0) && (ft_strchr(s_cmd[0], '/')))
+	//Se o comando contém '/' mas não é acessível
+	if (access(s_cmd[0], F_OK | X_OK) != 0 && ft_strchr(s_cmd[0], '/'))
 	{
 		ft_cmd_error(s_cmd[0]);
 		ft_free_array(s_cmd);
 		exit(127);
 	}
-	else
+	//Localiza comando nos diretórios da variável PATH
+	path = ft_locate_cmd(s_cmd, env);
+	if (!path)
 	{
-		// Obtém o caminho completo do comando
-		path = ft_locate_cmd(s_cmd, env);
-		// Executa o comando se encontrado
-		if (path ==  NULL || execve(path, s_cmd, env) == -1)
-		{
-			ft_cmd_error(s_cmd[0]);
-			ft_free_array(s_cmd);
-			exit(127);
-		}
+		ft_cmd_error(s_cmd[0]);
+		ft_free_array(s_cmd);
+		exit(127);
+	}
+	return(path);
+}
+
+/*
+	Funçao que verifica, localiza e executa um comando fornecido.
+	@param cmd: O comando a ser executado.
+	@param env: Array com as variáveis de ambiente do sistema.
+
+	A função divide o comando, verifica se é válido, localiza-o 
+	(caso necessário) e tenta executá-lo. 
+	Finaliza o processo em caso de erro ou sucesso.
+*/
+void	ft_exec_cmd_chek(char *cmd, char **env)
+{
+	char	**s_cmd;
+	char	*path;
+
+	//Verifica se o comando está vazio
+	ft_empty(cmd);
+
+	// Divide o comando em argumentos
+	s_cmd = ft_split(cmd, ' ');
+	if (!s_cmd || !s_cmd[0])
+	{
+		ft_free_array(s_cmd);
+		exit(1);
+	}
+	// Verifica e localiza o comando
+	path = ft_check_and_locate_cmd(s_cmd, env);
+
+	// Executa o comando
+	if (execve(path, s_cmd, env) == -1)
+	{
+		ft_cmd_error(s_cmd[0]);
 		ft_free_array(s_cmd);
 		free(path);
-		exit(0);
+		exit(127);
 	}
+	// Libera memória
+	ft_free_array(s_cmd);
+	free(path);
+	exit(0);
 }
 
 /*
