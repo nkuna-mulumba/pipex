@@ -6,7 +6,7 @@
 /*   By: jcongolo <jcongolo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 15:16:43 by jcongolo          #+#    #+#             */
-/*   Updated: 2025/03/23 15:37:04 by jcongolo         ###   ########.fr       */
+/*   Updated: 2025/03/26 00:12:58 by jcongolo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,11 +78,14 @@ void	ft_free_array(char **array)
 */
 int	ft_cmd_error(char *cmd)
 {
-	write(2, "Invalid command: ", 17);// Mensagem de erro no stderr(2)
+	write(2, "Pipex invalid command: ", 24);// Mensagem de erro no stderr(2)
 	write(2, cmd, ft_strlen(cmd));
 	write(2, "\n", 1);
 	return (0);
 }
+
+
+
 
 /*
 	Verifica se a string do comando está vazia ou contém apenas 

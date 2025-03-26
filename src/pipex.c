@@ -120,36 +120,41 @@ char	*ft_locate_cmd(char **s_cmd, char **env)
 	 encontrado no PATH).
 	Se o comando for inválido ou não encontrado, a função termina com `exit`.
 */
-static char	*ft_check_and_locate_cmd(char **s_cmd, char **env)
+static char	*ft_check_and_locate_cmd(char **s_cmd, char **env) 
 {
-	char	*path;
-	 //Verifica se o comando é absoluto (inicia com '/')
-	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (s_cmd[0][0] == '/'))
+    char *path;
+
+    if (!s_cmd || !s_cmd[0])
 	{
-		return(ft_strdup(s_cmd[0]));
-	}
-	//Verifica se o comando é relativo (inicia com './')
-	if ((access(s_cmd[0], F_OK | X_OK) == 0) && (ft_strncmp(s_cmd[0], "./", 2) == 0))
+        write(2, "Pipex: command not found: \n", 28);
+        exit(127);
+    }
+
+    // Verifica caminhos absolutos/relativos
+    if ((s_cmd[0][0] == '/') || (ft_strncmp(s_cmd[0], "./", 2) == 0))
 	{
-		return(ft_strdup(s_cmd[0]));
-	}
-	//Se o comando contém '/' mas não é acessível
-	if (access(s_cmd[0], F_OK | X_OK) != 0 && ft_strchr(s_cmd[0], '/'))
+        if (access(s_cmd[0], F_OK|X_OK) == 0)
+        {
+			return (ft_strdup(s_cmd[0]));	
+		}
+        ft_cmd_error(s_cmd[0]);
+        ft_free_array(s_cmd);
+        exit(127);
+    }
+
+    // Busca no PATH
+    path = ft_locate_cmd(s_cmd, env);
+    if (!path)
 	{
-		ft_cmd_error(s_cmd[0]);
-		ft_free_array(s_cmd);
-		exit(127);
-	}
-	//Localiza comando nos diretórios da variável PATH
-	path = ft_locate_cmd(s_cmd, env);
-	if (!path)
-	{
-		ft_cmd_error(s_cmd[0]);
-		ft_free_array(s_cmd);
-		exit(127);
-	}
-	return(path);
+        ft_cmd_error(s_cmd[0]);
+        ft_free_array(s_cmd);
+        exit(127);
+    }
+    return(path);
 }
+
+
+
 
 /*
 	Funçao que verifica, localiza e executa um comando fornecido.
@@ -165,103 +170,182 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 	char	**s_cmd;
 	char	*path;
 
-	//Verifica se o comando está vazio
-	ft_empty(cmd);
-
-	// Divide o comando em argumentos
-	s_cmd = ft_split(cmd, ' ');
-	if (!s_cmd || !s_cmd[0])
+	// Divide o comando em argumentos e verifica se é válido.
+	if (!cmd || !*cmd || !(s_cmd = ft_split(cmd, ' ')))
 	{
-		ft_free_array(s_cmd);
-		exit(1);
-	}
-	// Verifica e localiza o comando
+        write(2, "Pipex: Missing command: \n", 26);
+        exit(127);
+    }
+	
+	// Localiza o caminho completo do comando
 	path = ft_check_and_locate_cmd(s_cmd, env);
 
-	// Executa o comando
+	// Executa o comando localizado
 	if (execve(path, s_cmd, env) == -1)
 	{
-		ft_cmd_error(s_cmd[0]);
-		ft_free_array(s_cmd);
-		free(path);
-		exit(127);
-	}
+        ft_cmd_error(s_cmd[0]);
+        ft_free_array(s_cmd);
+        free(path);
+        exit(126);
+    }
 	// Libera memória
 	ft_free_array(s_cmd);
 	free(path);
-	exit(0);
 }
 
 /*
-	Funçao para executar o 1º comando, redirecionando a entrada 
-	do arquivo e a saída para o pipe
-	@param argv: Array de argumentos passados ao programa
-	@param envp: Array de strings com as variáveis de ambiente
-	@param file_pipe: Array com os descritores de arquivo do pipe
-	@return: ID do processo filho
+    Funçao para exibir mensagem de erro sobre o arquivo e encerra o programa.
+    @param filename: Nome do arquivo relacionado ao erro.
+    @return: Não retorna (termina com exit(1)).
 */
-pid_t	ft_cmd1(char **argv, char **env, int *file_pipe)
+void	ft_file_error(char *filename)
 {
-	pid_t	id; //Identificador do processo (PID)
-	int		fd; //Descritor de arquivo para o arquivo de entrada
-	
-	id = fork();//Processo filho é criada
-	if (id == -1)
-		(perror("Error"), exit(1));
-	if (id == 0)//Executar quando é processo filho
+    perror(filename);  // Exibe mensagem padrão de erro baseada no sistema.
+    exit(1);           // Encerra o programa com código de erro.
+}
+
+/*
+    Funçao que abre um arquivo para leitura ou escrita.
+    @param filename: Nome do arquivo a ser aberto.
+    @param mode: Modo de abertura (ex.: O_RDONLY ou O_WRONLY).
+    @param is_output: Indica se é um arquivo de saída (1 para saída, 0 para entrada).
+*/
+int	ft_open_file(char *filename, int mode, int is_output) 
+{
+    int	fd;
+    
+	// Verifica se o nome do arquivo é válido
+    if (!filename || !*filename)
 	{
-		fd = open(argv[1], O_RDONLY);
-		if (fd < 0)
+        write(2, "Pipex: invalid filename\n", 24);
+        exit(1);
+    }
+
+    // Abre o arquivo de saída com permissões padrão
+    if (is_output)
+	{
+        fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        if (fd < 0)
 		{
-			ft_pipe_error(file_pipe, argv[1]);
-			close(file_pipe[0]);// Fecha descritor de leitura do pipe
-			close(file_pipe[1]);// Fecha descritor de escrita do pipe
-			exit(1);
-		}
-		dup2(fd, STDIN_FILENO);//Redicionar para o arquivo de entrada
-		dup2(file_pipe[1], STDOUT_FILENO);//Redicionar saida para descritor de escrita pipe
-		close(file_pipe[0]);//Fechar Descritor de leitura pipe no processo filho
-		close(file_pipe[1]);//Fechar Descritor de escrita do pipe no processo filho
-		close(fd);//Fechar o descritor de arquivo de entrada
-		ft_exec_cmd_chek(argv[2], env);//Verificar e executar comando fornecido
-	}
-	return (id);
+            ft_file_error(filename);
+        }
+        return (fd);
+    }
+
+    // Abre o arquivo de entrada no modo especificado
+    fd = open(filename, mode);
+    if (fd < 0)
+	{
+        ft_file_error(filename);
+    }
+    return (fd);
 }
 
 
 /*
-	Funçao para executar 2º comando, redirecionando a 
-	entrada do pipe e a saída para o arquivo
-	@param argv: Array de argumentos passados ao programa
-	@param envp: Array de strings com as variáveis de ambiente
-	@param file_pipe: Array com os descritores de arquivo do pipe
-	@param argc: Número de argumentos passados ao programa
-	@return: ID do processo filho
+    Função para redirecionar entrada e saída no processo filho.
+    @param fd_in: Descritor de arquivo para entrada.
+    @param fd_out: Descritor de arquivo para saída.
 */
-pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc)
+void	ft_redirect_io(int fd_in, int fd_out)
 {
-	pid_t	id;
-	int		fd;
+    // Redireciona a entrada padrão para o descritor fornecido.
+    if (dup2(fd_in, STDIN_FILENO) == -1)  // Verifica se dup2 teve sucesso.
+    {
+        perror("dup2 error (fd_in)");    // Exibe erro detalhado caso falhe.
+        exit(1);                        // Encerra com código de erro.
+    }
 
-	id = fork();
-	if (id == -1)
-		(perror("Error"), exit(1));
-	if (id == 0)
+    // Redireciona a saída padrão para o descritor fornecido.
+    if (dup2(fd_out, STDOUT_FILENO) == -1)  // Verifica se dup2 teve sucesso.
+    {
+        perror("dup2 error (fd_out)");   // Exibe erro detalhado caso falhe.
+        exit(1);                        // Encerra com código de erro.
+    }
+}
+
+
+
+/*
+    Funçao para executa o 1º comando.
+    Redireciona entrada do arquivo e saída para o pipe.
+    @param argv: Argumentos passados ao programa.
+    @param env: Variáveis de ambiente.
+    @param file_pipe: Descritores do pipe.
+    @return: PID do processo filho ou -1 em caso de erro.
+*/
+pid_t	ft_cmd1(char **argv, char **env, int *file_pipe) 
+{
+    pid_t	pid;
+    int		fd;
+
+	// Abre o arquivo de entrada para leitura
+    fd = ft_open_file(argv[1], O_RDONLY, 0);
+    if (fd < 0)
 	{
-		fd = open(argv [argc - 1], O_CREAT | O_RDWR | O_TRUNC, 0744 );
-		if (fd < 0)
+        return (-1);
+    }
+
+	// Cria o processo filho
+    pid = fork();
+    if (pid == -1)
+	{
+        close(fd);
+        perror("Pipex: fork");
+        exit(1);
+    }
+	// No processo filho
+    if (pid == 0)
+	{
+        ft_redirect_io(fd, file_pipe[1]);//Configura entrada e saída
+        close(fd);// Fecha arquivo
+        close(file_pipe[0]);//Fecha leitura do pipe
+		close(file_pipe[1]);//Fecha escrita do pipe
+        ft_exec_cmd_chek(argv[2], env);//Executa o comando
+    }
+	// No processo pai, fecha arquivo de entrada
+    close(fd);
+	// Retorna PID do filho
+    return (pid);
+}
+
+
+/*
+    Funçao para executar o 2º comando.
+    Redireciona entrada do pipe e saída para o arquivo de saída.
+    @param argv: Argumentos passados ao programa.
+    @param env: Variáveis de ambiente.
+    @param file_pipe: Descritores do pipe.
+    @param argc: Número de argumentos.
+    @return: PID do processo filho.
+*/
+pid_t	ft_cmd2(char **argv, char **env, int *file_pipe, int argc) 
+{
+    pid_t	pid;
+    int		fd;
+
+    pid = fork();
+    if (pid == -1)
+	{
+        perror("pipex: fork");
+        exit(1);
+    }
+    if (pid == 0)
+	{
+        // Abre o arquivo de saída
+        fd = open(argv[argc-1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0)
 		{
-			ft_pipe_error(file_pipe, argv[argc - 1]);
-			close(file_pipe[0]);// Fecha descritor de leitura do pipe
-			close(file_pipe[1]);// Fecha descritor de escrita do pipe
-			exit(1);
-		}
-		dup2(file_pipe[0], STDIN_FILENO);// Redirecionar entrada para descritor de leitura do pipe
-		dup2(fd, STDOUT_FILENO);// Redirecionar saída para o arquivo de saída
-		close(file_pipe[0]);// Fechar descritor de leitura do pipe no processo filho
-		close(file_pipe[1]);// Fechar descritor de escrita do pipe no processo filho
-		close(fd);// Fechar o descritor de arquivo de saída
-		ft_exec_cmd_chek(argv[argc - 2], env);// Verificar e executar comando fornecido
-	}
-	return (id);
+            ft_file_error(argv[argc-1]);// Erro ao abrir arquivo de saída
+        }
+		// Redireciona entrada do pipe e saída para o arquivo
+        ft_redirect_io(file_pipe[0], fd);
+		//Fecha descritores no processo filho
+        close(fd);
+        close(file_pipe[0]);
+		close(file_pipe[1]);
+		// Executa o comando
+        ft_exec_cmd_chek(argv[argc-2], env);
+    }
+    return (pid);
 }

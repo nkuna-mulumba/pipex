@@ -6,7 +6,7 @@
 /*   By: jcongolo <jcongolo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 14:28:23 by jcongolo          #+#    #+#             */
-/*   Updated: 2025/03/23 16:00:06 by jcongolo         ###   ########.fr       */
+/*   Updated: 2025/03/26 01:19:26 by jcongolo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 //Adicionar biblioteca "libft" no projecto
 # include "../libft/libft.h"
+# include <errno.h> 
 
 /*
 	DECLARAÇAO DAS FUNÇOES:
@@ -45,7 +46,7 @@ void    ft_exec_multiple_pipes(int argc, char **argv, char **env, int in);
 # ifndef BUFFER_SIZE
 #	define BUFFER_SIZE 1024 //Buffer para leitura
 # endif // Fim do segundo bloco (BUFFER_SIZE)
-char *ft_get_next_line(int fd);
+char	*ft_get_next_line(int fd);
 //Funçao para ler entrada interativa até o LIMITADOR ser digitado.
 void    ft_here_doc(char *limiter, int argc, char **argv, char **env);
 
