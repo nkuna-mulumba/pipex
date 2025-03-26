@@ -15,7 +15,7 @@
 
 //Adicionar biblioteca "libft" no projecto
 # include "../libft/libft.h"
-# include <errno.h> 
+# include <errno.h>
 
 /*
 	DECLARAÇAO DAS FUNÇOES:
@@ -30,6 +30,10 @@ void	ft_free_array(char **array);
 int		ft_cmd_error(char *cmd);
 //Funçao para verificar se argumento é vazia ou contem espaço
 void	ft_empty(char *cmd);
+//Funçao para redicionar entrada e saida no processo filho
+void	ft_redirect_io(int fd_in, int fd_out);
+//Funçao que abre um arquivo para leitura ou escrita.
+int		ft_open_file(char *filename, int mode, int is_output);
 //Funçao para encontrar caminho completo do executavel
 char	*ft_locate_cmd(char **cmd_s, char **env);
 //Funçao para verificar e executar comandos

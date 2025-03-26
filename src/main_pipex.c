@@ -12,7 +12,7 @@
 
 #include "../include/pipex.h"
 
-/**/
+/*
 int	main(int argc, char **argv, char **env)
 {
 	int pipe_fd[2];// Array para os descritores do pipe (leitura e escrita).
@@ -22,7 +22,7 @@ int	main(int argc, char **argv, char **env)
 	if (argc != 5)
 	{
 		write(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n", 41);
-		return (1);z
+		return (1);
 	}
 	// Cria um pipe para comunicação entre os processos.
 	if (pipe(pipe_fd) == -1)
@@ -57,3 +57,4 @@ int	main(int argc, char **argv, char **env)
 	}
 	return (1);
 }
+*/
