@@ -12,20 +12,6 @@
 
 #include "../include/pipex.h"
 
-/*
-//Testar a funçao ft_exec_multiple_pipes()
-int main(int argc, char **argv, char **env)
-{
-	if (argc < 5)
-	{
-		write(2 , "Use: ./pipex infile cmd1 cmd2 ... cmdn outfile\n", 48);
-		return(1);
-	}
-	ft_exec_multiple_pipes(argc, argv, env);
-	return (0);
-}
-*/
-
 int main(int argc, char **argv, char **env)
 {
 	if(argc < 5)
@@ -45,7 +31,8 @@ int main(int argc, char **argv, char **env)
 	}
 	else
 	{
-		ft_exec_multiple_pipes(argc, argv, env, 0);//Chamara a funçao para multiplos pipes
+		//Chamara a funçao para multiplos pipes
+		ft_exec_multiple_pipes(argc, argv, env, 0);
 	}
 	return (0);
 }
