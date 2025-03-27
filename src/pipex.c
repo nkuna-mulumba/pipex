@@ -180,17 +180,6 @@ void	ft_exec_cmd_chek(char *cmd, char **env)
 }
 
 /*
-	Funçao para exibir mensagem de erro sobre o arquivo e encerra o programa.
-	@param filename: Nome do arquivo relacionado ao erro.
-	@return: Não retorna (termina com exit(1)).
-*/
-void	ft_file_error(char *filename)
-{
-	perror(filename); // Exibe mensagem padrão de erro baseada no sistema.
-	exit(1);// Encerra o programa com código de erro.
-}
-
-/*
 	Funçao que abre um arquivo para leitura ou escrita.
 	@param filename: Nome do arquivo a ser aberto.
 	@param mode: Modo de abertura (ex.: O_RDONLY ou O_WRONLY).

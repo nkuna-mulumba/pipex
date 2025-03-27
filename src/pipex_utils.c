@@ -13,19 +13,6 @@
 #include "../include/pipex.h"
 
 /*
-	Funçao para fecha os descritores de arquivo do pipe
-	e exibe uma mensagem de erro
-	@param fd: Array com os descritores de arquivo do pipe
-	@param file: Nome do arquivo associado ao erro
-*/
-void	ft_pipe_error(int *fd, char *file)
-{
-	close(fd[0]);
-	close(fd[1]);
-	perror(file);
-}
-
-/*
 	funçao que busca a variável de ambiente PATH
 	@param env: Array de strings com as variáveis de ambiente
 	@return: Valor da variável PATH ou NULL se não encontrada
@@ -86,11 +73,22 @@ int	ft_cmd_error(char *cmd)
 }
 
 /*
+	Funçao para exibir mensagem de erro sobre o arquivo e encerra o programa.
+	@param filename: Nome do arquivo relacionado ao erro.
+	@return: Não retorna (termina com exit(1)).
+*/
+void	ft_file_error(char *filename)
+{
+	perror(filename); // Exibe mensagem padrão de erro baseada no sistema.
+	exit(1);// Encerra o programa com código de erro.
+}
+
+/*
 	Verifica se a string do comando está vazia ou contém apenas
 	espaços em branco.
 	Chama ft_cmd_error se estiver vazia.
 	@param cmd: String do comando a ser verificada
-*/
+
 void	ft_empty(char *cmd)
 {
 	while ((*cmd >= 9 && *cmd <= 13) || *cmd == ' ')
@@ -102,3 +100,19 @@ void	ft_empty(char *cmd)
 		ft_cmd_error(cmd);
 	}
 }
+*/
+
+
+/*
+	Funçao para fecha os descritores de arquivo do pipe
+	e exibe uma mensagem de erro
+	@param fd: Array com os descritores de arquivo do pipe
+	@param file: Nome do arquivo associado ao erro
+
+void	ft_pipe_error(int *fd, char *file)
+{
+	close(fd[0]);
+	close(fd[1]);
+	perror(file);
+}
+*/

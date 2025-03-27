@@ -21,15 +21,17 @@
 	DECLARAÇAO DAS FUNÇOES:
 */
 //Funçao para fechar fd de arquivos do pipe, se falhar exibe erro
-void	ft_pipe_error(int *fd, char *file);
+// void	ft_pipe_error(int *fd, char *file);
 //Funçao para encontrar a variavel de ambiente PATH
 char	*ft_get_path_variable(char **env);
 //Funçao para liberar memoria de cada string
 void	ft_free_array(char **array);
 //Funçao para exibir a mensagem de erro e encerrar programa
 int		ft_cmd_error(char *cmd);
+//Funçao para exibir mensagem de erro sobre o arquivo e encerra o programa
+void	ft_file_error(char *filename);
 //Funçao para verificar se argumento é vazia ou contem espaço
-void	ft_empty(char *cmd);
+//void	ft_empty(char *cmd);
 //Funçao para redicionar entrada e saida no processo filho
 void	ft_redirect_io(int fd_in, int fd_out);
 //Funçao que abre um arquivo para leitura ou escrita.
