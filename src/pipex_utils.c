@@ -14,8 +14,8 @@
 
 /*
 	funçao que busca a variável de ambiente PATH
-	@param env: Array de strings com as variáveis de ambiente
-	@return: Valor da variável PATH ou NULL se não encontrada
+	-> env: Array de strings com as variáveis de ambiente
+	-> return: Valor da variável PATH ou NULL se não encontrada
 */
 char	*ft_get_path_variable(char **env)
 {
@@ -38,8 +38,102 @@ char	*ft_get_path_variable(char **env)
 }
 
 /*
+	Função para obter e dividir a variável PATH.
+	-> param env: Array de strings com as variáveis de ambiente.
+	-> return: Array de diretórios da variável PATH ou NULL se
+	não encontrada.
+*/
+static char	**ft_get_and_split_path(char **env)
+{
+	char	*path;
+	char	**path_split;
+
+	// Obter a variável PATH
+	path = ft_get_path_variable(env);
+	if (!path)
+	{
+		return (NULL);
+	}
+	// Dividir PATH em diretórios
+	path_split = ft_split(path, ':');
+	if (!path_split)
+	{
+		free(path);
+		return (NULL);
+	}
+	return (path_split);
+}
+
+/*
+	Função para localizar o caminho completo do executável.
+	-> s_cmd: Array de strings com o comando e argumentos.
+	-> path_split: Array de diretórios da variável PATH.
+	-> return: Caminho completo do executável ou NULL se não
+	encontrado.
+*/
+static char	*ft_concat_and_check_cmd(char **s_cmd, char **path_split)
+{
+	int		i;
+	char	*path;
+	char	*cmd;
+
+	// Adiciona "/" em nome do comando
+	cmd = ft_strjoin("/", s_cmd[0]);
+	if (!cmd)
+		exit(1);
+	// Percorre os diretórios e tenta localizar o comando
+	i = 0;
+	while (path_split[i] != NULL)
+	{
+		// Concatena o diretório com o comando
+		path = ft_strjoin(path_split[i], cmd);
+		if (!path)
+		{
+			free(cmd);
+			return (NULL);
+		}
+		// Verifica se o comando é executável
+		if (access(path, F_OK | X_OK) == 0)
+		{
+			free(cmd);
+			return (path); // Retorna o caminho completo encontrado
+		}
+		free(path);
+		i++;
+	}
+	// Libera memória se comando não encontrado
+	free(cmd);
+	return (NULL);
+}
+
+/*
+	Função para obter o caminho completo do executável.
+	-> s_cmd: Array de strings com o comando e argumentos.
+	-> env: Array de strings com as variáveis de ambiente.
+	-> return: Caminho completo do executável ou NULL se não encontrado.
+*/
+char	*ft_locate_cmd(char **s_cmd, char **env)
+{
+	char	**path_split;
+	char	*cmd_path;
+
+	// Obtém e divide a variável PATH
+	path_split = ft_get_and_split_path(env);
+	if (!path_split)
+	{
+		ft_cmd_error(s_cmd[0]);
+		return (NULL);
+	}
+	// Procura comando nos diretórios da PATH
+	cmd_path = ft_concat_and_check_cmd(s_cmd, path_split);
+	// Libera memória da divisão da PATH
+	ft_free_array(path_split);
+	return (cmd_path);
+}
+
+/*
 	A funçao que libera memória de um array de strings
-	@param tab: Array de strings a ser liberado
+	-> array: Array de strings a ser liberado
 */
 void	ft_free_array(char **array)
 {
@@ -57,62 +151,3 @@ void	ft_free_array(char **array)
 	// Liberar array
 	free(array);
 }
-
-/*
-	A funça para exibir mensagem de erro e
-	encerra o programa em caso de nao encontrar cmd
-	@param cmd: Comando que causou o erro
-	@return: Não retorna (encerra o programa)
-*/
-int	ft_cmd_error(char *cmd)
-{
-	write(2, "Pipex invalid command: ", 24); // Mensagem de erro no stderr(2)
-	write(2, cmd, ft_strlen(cmd));
-	write(2, "\n", 1);
-	return (0);
-}
-
-/*
-	Funçao para exibir mensagem de erro sobre o arquivo e encerra o programa.
-	@param filename: Nome do arquivo relacionado ao erro.
-	@return: Não retorna (termina com exit(1)).
-*/
-void	ft_file_error(char *filename)
-{
-	perror(filename); // Exibe mensagem padrão de erro baseada no sistema.
-	exit(1);// Encerra o programa com código de erro.
-}
-
-/*
-	Verifica se a string do comando está vazia ou contém apenas
-	espaços em branco.
-	Chama ft_cmd_error se estiver vazia.
-	@param cmd: String do comando a ser verificada
-
-void	ft_empty(char *cmd)
-{
-	while ((*cmd >= 9 && *cmd <= 13) || *cmd == ' ')
-	{
-		cmd++;
-	}
-	if (*cmd == '\0')
-	{
-		ft_cmd_error(cmd);
-	}
-}
-*/
-
-
-/*
-	Funçao para fecha os descritores de arquivo do pipe
-	e exibe uma mensagem de erro
-	@param fd: Array com os descritores de arquivo do pipe
-	@param file: Nome do arquivo associado ao erro
-
-void	ft_pipe_error(int *fd, char *file)
-{
-	close(fd[0]);
-	close(fd[1]);
-	perror(file);
-}
-*/

@@ -12,14 +12,17 @@
 
 #include "../include/pipex.h"
 
-/**
- * ft_exec_intermediate_cmd - Executa um comando intermediário no pipeline.
- * Redireciona a entrada do pipe anterior e a saída para o próximo pipe.
- * Cria um processo filho para a execução do comando, gerenciando os pipes
-   necessários.
+/*
+ * Funçao que executa um comando intermediário no pipeline.
+ *->pipex: Estrutura contendo dados do pipeline (cmd atual, argmentos e env)
+ *->fd_in: Ponteiro do descritor de entrada (recebe entrada do pipe anterior)
+ *->pipe_fd: Ponteiro do pipe atual (para redirecionar saída deste comando)
+ *Descrição:
+ * - Redireciona a entrada do pipe anterior para o comando atual.
+ * - Cria um processo filho para executar o comando, gerenciando pipes.
+ * - Atualiza fd_in para o próximo comando no pipeline.
  */
-static void	ft_exec_intermediate_cmd(char *cmd, int *fd_in, int *pipe_fd,
-		char **env)
+static void	ft_exec_intermediate_cmd(t_pipex *pipex, int *fd_in, int *pipe_fd)
 {
 	pid_t	pid;
 
@@ -36,28 +39,36 @@ static void	ft_exec_intermediate_cmd(char *cmd, int *fd_in, int *pipe_fd,
 	}
 	if (pid == 0) // Processo filho
 	{
-		close(pipe_fd[0]);          // Fechar leitura do pipe
+		close(pipe_fd[0]);// Fechar leitura do pipe
 		dup2(*fd_in, STDIN_FILENO); // Redirecionar entrada para fd_in
 		close(*fd_in);
 		dup2(pipe_fd[1], STDOUT_FILENO); // Redirecionar saída para o pipe
 		close(pipe_fd[1]);
-		ft_exec_cmd_chek(cmd, env); // Executar comando
-		exit(1);                    // Se o comando falhar
+		ft_exec_cmd_chek(pipex->cmd, pipex->env); // Executar comando
+		exit(1);// Se o comando falhar
 	}
 	else // Processo pai
 	{
 		close(pipe_fd[1]);   // Fechar escrita no pipe
-		close(*fd_in);       // Fechar descritor de entrada usado
+		close(*fd_in);// Fechar descritor de entrada usado
 		*fd_in = pipe_fd[0]; // Atualizar entrada para o próximo comando
 	}
 }
 
 /*
- * ft_exec_last_cmd - Executa o último comando no pipeline.
- * Redireciona a entrada do último pipe e a saída para o arquivo de saída.
- * Gerencia a criação de um processo filho e manipula o arquivo de saída.
+ * Funçao para executar o último comando no pipeline.
+ *->pipex: Estrutura contendo dados do pipeline (comando atual, argumentos e env).
+ *->fd_in: Descritor de entrada (recebe a entrada do último pipe).
+ *->outfile: Nome do arquivo de saída onde o resultado final será armazenado.
+ *->in: Flag indicando o modo:
+ *		- 0: Modo normal (sobrescrever arquivo de saída).
+ *		- 1: Modo here_doc (adicionar ao final do arquivo de saída).
+ * Descrição:
+ * - Redireciona entrada do último pipe para o comando final.
+ * - Redireciona saída para o arquivo especificado (modo truncar ou append).
+ * - Cria um processo filho para executar o comando.
  */
-static void	ft_exec_last_cmd(char *cmd, int fd_in, char *outfile, char **env, int in)
+static void	ft_exec_last_cmd(t_pipex *pipex, int fd_in, char *outfile, int in)
 {
 	int		fd_out;
 	pid_t	pid;
@@ -80,12 +91,12 @@ static void	ft_exec_last_cmd(char *cmd, int fd_in, char *outfile, char **env, in
 	}
 	if (pid == 0) // Processo filho
 	{
-		dup2(fd_in, STDIN_FILENO);   // Redirecionar entrada do último pipe
+		dup2(fd_in, STDIN_FILENO);// Redirecionar entrada do último pipe
 		dup2(fd_out, STDOUT_FILENO); // Redirecionar saída para o arquivo
 		close(fd_in);
 		close(fd_out);
-		ft_exec_cmd_chek(cmd, env); // Executar o último comando
-		exit(1);                    // Se o comando falhar
+		ft_exec_cmd_chek(pipex->cmd, pipex->env); // Executar o último comando
+		exit(1);// Se o comando falhar
 	}
 	else // Processo pai
 	{
@@ -94,12 +105,19 @@ static void	ft_exec_last_cmd(char *cmd, int fd_in, char *outfile, char **env, in
 	}
 }
 
-/**
- * ft_exec_multiple_pipes - Controla o pipeline completo de comandos.
- * Gerencia os arquivos de entrada e saída e organiza a execução dos
- * comandos intermediários e o último comando no pipeline.
+/*
+ * Funçao para controlar o pipeline completo de comandos
+ *->argc: Número de argumentos (para determinar número de cmd)
+ *->pipex: Estrutura com dados do pipeline (cmd atual, argmentos e env)
+ *->in: Descritor de entrada:
+ *		- 0: Indica entrada inicial modo normal (arquivo)
+ *		- 2: Indica entrada inicial modo here_doc (pipe)
+ * Descrição:
+ * - Abre o arquivo de entrada ou utiliza o pipe criado no modo here_doc
+ * - Executa comandos intermediários redirecionando entrada e saída
+ * - Finaliza com o último cmd, armazenando saída no arquivo especificado
  */
-void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
+void	ft_exec_multiple_pipes(int argc, t_pipex *pipex, int in)
 {
 	int	fd_in;
 	int	pipe_fd[2];
@@ -108,7 +126,7 @@ void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
 	// Abrir arquivo de entrada
 	if (!in)
 	{
-		fd_in = open(argv[1], O_RDONLY);
+		fd_in = open(pipex->argv[1], O_RDONLY);
 		if (fd_in < 0)
 		{
 			perror("Error: open infile");
@@ -121,26 +139,29 @@ void	ft_exec_multiple_pipes(int argc, char **argv, char **env, int in)
 	i = 2 - (in != 0); // Começa no primeiro comando
 	while (i < argc - 2)
 	{
-		ft_exec_intermediate_cmd(argv[i], &fd_in, pipe_fd, env);
+		pipex->cmd = pipex->argv[i];
+		ft_exec_intermediate_cmd(pipex, &fd_in, pipe_fd);
 		i++;
 	}
 	// Executar o último comando
-	ft_exec_last_cmd(argv[argc - 2], fd_in, argv[argc - 1], env, in);
+	pipex->cmd = pipex->argv[argc - 2];
+	ft_exec_last_cmd(pipex, fd_in, pipex->argv[argc - 1], in);
 	// Esperar processos filhos
 	i = -1;
 	while (++i < argc - 2 - (in != 0))
 		wait(NULL);
 }
 
-/*
-** ft_here_doc:
-** - Lê entrada interativa até o LIMITADOR ser digitado.
-** - Escreve o conteúdo coletado em um pipe.
-** - Redireciona STDIN para esse pipe e chama ft_exec_multiple_pipes para
-**   executar os comandos, ignorando os dois primeiros argumentos
-	("here_doc" e LIMITADOR).
-*/
-void	ft_here_doc(char *limiter, int argc, char **argv, char **env)
+/**
+ * Funçao que gerencia o modo here_doc.
+ * ->limiter: String que define o limitador(termina a leitura interativa)
+ * ->pip: Estrutura com dados do pipeline (ajustada para ignorar here_doc e LIMITER)
+ * Descrição:
+ * - Lê entradas interativas do usuário até que LIMITER seja encontrado
+ * - Escreve as entradas no pipe criado e redireciona para pipeline.
+ * - Ajusta argumentos de `pip` para ignorar os dois primeiros (here_doc e LIMITER)
+ */
+void	ft_here_doc(char *limiter, t_pipex *pip)
 {
 	int		fd[2];
 	char	*line;
@@ -177,5 +198,6 @@ void	ft_here_doc(char *limiter, int argc, char **argv, char **env)
 	// Liberar o limitador com '\n'
 	free(limiter_with_newline);
 	// Executar comandos
-	ft_exec_multiple_pipes(argc - 2, argv + 2, env, fd[0]);
+	pip->argv += 2;
+	ft_exec_multiple_pipes(pip->argc - 2, pip, fd[0]);
 }

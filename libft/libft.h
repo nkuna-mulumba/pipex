@@ -23,6 +23,7 @@
 # include <limits.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <errno.h>
 
 int		ft_atoi(const char *nptr);
 long	ft_atol(const char *nptr);

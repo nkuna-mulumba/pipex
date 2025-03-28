@@ -10,10 +10,12 @@ INCLUDE_DIR = include
 
 # Arquivos fontes para a parte obrigatória e bônus
 SRC = $(SRC_DIR)/pipex_utils.c\
+	$(SRC_DIR)/pipex_error.c\
 	$(SRC_DIR)/pipex.c\
 	$(SRC_DIR)/main_pipex.c
 
 SRC_BONUS = $(SRC_DIR)/pipex_utils.c\
+	$(SRC_DIR)/pipex_error.c\
 	$(SRC_DIR)/pipex.c\
 	$(SRC_EXTRA_DIR)/pipex_extra_utils.c\
 	$(SRC_EXTRA_DIR)/pipex_extra.c\

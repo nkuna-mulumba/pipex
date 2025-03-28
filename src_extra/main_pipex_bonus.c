@@ -11,9 +11,15 @@
 /* ************************************************************************** */
 
 #include "../include/pipex.h"
-
+/**/
 int main(int argc, char **argv, char **env)
 {
+	t_pipex	pipex;
+
+	// Inicializa a estrutura com os dados do programa
+	pipex.argc = argc;
+	pipex.argv = argv;
+	pipex.env = env;
 	if(argc < 5)
 	{
 		write(2, "Usage: ./pipex infile cmd1 cmd2 outfile\n", 41);
@@ -27,15 +33,15 @@ int main(int argc, char **argv, char **env)
 			write(2, "Usage: ./pipex here_doc LIMITADOR cmd1 cmd2 outfile\n", 52);
 			return (1);
 		}
-		ft_here_doc(argv[2], argc, argv, env); //Chamar a funçao para 'here_doc'
+		ft_here_doc(argv[2], &pipex); //Chamar a funçao para 'here_doc'
 	}
 	else
 	{
 		//Chamara a funçao para multiplos pipes
-		ft_exec_multiple_pipes(argc, argv, env, 0);
+		ft_exec_multiple_pipes(pipex.argc, &pipex, 0);
 	}
 	return (0);
 }
-	
+
 
 
